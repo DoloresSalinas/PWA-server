@@ -9,7 +9,6 @@ on:
 jobs:
   k6-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v3
@@ -17,9 +16,14 @@ jobs:
       - name: Instalar K6
         run: |
           sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list > /dev/null
+          sudo apt-get update
           sudo apt-get install -y k6
 
       - name: Ejecutar pruebas en K6 Cloud
+        run: k6 cloud tests/prueba_k6.js
         env:
           K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
-        run: k6 cloud pruebas_k6.js
